@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Compilation de Tetris" default="dist" xmlns:ivy="antlib:org.apache.ivy.ant">
+	
+	<property name="Built-By" value="Youssef CHARFI"/>
+	<property name="Implementation-Version" value="1.0.0"/>
+	<property name="Main-Class" value="fr.ubo.tetris.Tetris"/>
+	<property name="Class-Path" value="lib/commons-lang3-3.5.jar"/>
+	<property name="test.results.dir" value="test-results"></property>
+	<property name="test.reports" value="test-reports"></property>
+	<property name="doc.dir" value="javadoc"></property>
+	
+	<target name="retrieve">
+		<ivy:retrieve sync="true" type="jar" />
+		<ivy:settings />
+		<ivy:resolve /> 
+	</target>
+	
+    <target name="clean">
+        <echo message= "Suppression des fichiers issus de la compilation"/>
+        <delete dir="bin"/>
+    	<delete dir="lib"/>
+    	<mkdir dir="lib"/>
+    </target>
+	
+	 <target name="compile-test">
+		<javac destdir="bin" srcdir="test" source="${ant.java.version}">
+	 		<classpath >
+	 			<pathelement location="./lib/commons-lang3-3.5.jar"/> 
+	 	    	<pathelement location="./lib/junit-4.12.jar"/> 
+	 	    	<pathelement location="./lib/hamcrest-core-1.3.jar"/>
+	 			<pathelement location="bin"/>
+	 		</classpath>
+		</javac>
+	</target>
+	
+	<target name="test" depends="compile-test">
+		<mkdir dir="bin/test-results"/>
+		<junit>
+			<classpath>
+				<pathelement location="lib/hamcrest-core-1.3.jar"/>
+				<pathelement location="lib/junit-4.12.jar"/>
+				<pathelement location="bin"/>
+			</classpath>
+			<formatter type="xml"/>
+			<formatter type="plain"/>
+			<test name="fr.ubo.tetris.TestShape" todir="bin/test-results" />
+		</junit>
+	</target>
+	
+	<target name="test-reports" depends="test">
+		<mkdir dir="${test.reports}"/>
+		<junitreport todir="${test.reports}">
+			<fileset dir="bin/test-results">
+				<include name="Test*.xml"/>
+			</fileset>
+			<report format="frames" todir="${test.reports}"/>
+		</junitreport>
+	</target> 
+	
+	<target name="javadoc">
+		<delete dir="${doc.dir}"/>
+		<mkdir dir="${doc.dir}"/>
+		<javadoc sourcepath="src" destdir="${doc.dir}" classpath="lib/commons-lang3-3.5.jar">
+		</javadoc>
+	</target>
+	
+    <target name="compile" depends="retrieve">
+    	<mkdir dir="bin"/>
+    	<javac srcdir="src" destdir="bin" classpath="lib/commons-lang3-3.5.jar" source="${ant.java.version}">
+    	</javac>
+    </target>
+	
+    <target name="dist" depends="clean, compile">
+    	<mkdir dir="bin/META-INF"/>
+    	<manifest file="bin/META-INF/MANIFEST.MF">
+    		<attribute name="Built-By" value="Youssef CHARFI"/>
+    		<attribute name="Implementation-Version" value="1.0.0"/>
+    		<attribute name="Main-Class" value="fr.ubo.tetris.Tetris"/>
+    		<attribute name="Class-Path" value="lib/commons-lang3-3.5.jar"/>
+    	</manifest>	
+    	<jar manifest="bin/META-INF/MANIFEST.MF" destfile="Tetris.jar" basedir="bin">
+    	</jar>
+    </target>
+	
+	<target name="all" depends="dist, test-reports, javadoc">
+	</target>
+	
+</project>
